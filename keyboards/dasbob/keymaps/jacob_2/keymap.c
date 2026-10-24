@@ -144,7 +144,6 @@ const uint16_t PROGMEM cmb_t_n_s[]     = {KC_T, KC_N, KC_S, COMBO_END};
 const uint16_t PROGMEM cmb_h_t_n_s[]   = {KC_H, KC_T, KC_N, KC_S, COMBO_END};
 const uint16_t PROGMEM cmb_m_w_v[]     = {KC_M, KC_W, KC_V, COMBO_END};
 const uint16_t PROGMEM cmb_quot_q_j_k[] = {KC_QUOT, KC_Q, KC_J, KC_K, COMBO_END};
-const uint16_t PROGMEM cmb_sym_sft[]   = {SYM_DEF, SK_SFT, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(cmb_o_e_u, GO_DEF),
@@ -162,7 +161,6 @@ combo_t key_combos[] = {
     COMBO(cmb_h_t_n_s, TO(NUM)),
     COMBO(cmb_m_w_v, OSL(CUS)),
     COMBO(cmb_quot_q_j_k, TO(GAM)),
-    COMBO(cmb_sym_sft, SK_GUI),
 };
 
 static uint16_t exit_keycode(uint16_t keycode) {
