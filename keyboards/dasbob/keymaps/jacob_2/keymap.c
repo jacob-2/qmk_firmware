@@ -3,7 +3,7 @@
 #include "swapper.h"
 
 // Port of the jacob_2 ZMK Totem layout, cut down to 30 keys. The top-row pinky
-// keys, the top-row inner index keys and the innermost thumb keys are unused.
+// keys, the top-row inner index keys and the outer thumb keys are unused.
 
 enum layers {
     DEF,
@@ -47,7 +47,7 @@ enum keycodes {
     XXXXXXX, L01, L02, L03, XXXXXXX,    XXXXXXX, R01, R02, R03, XXXXXXX, \
     L10,     L11, L12, L13, L14,        R10,     R11, R12, R13, R14,     \
     L20,     L21, L22, L23, L24,        R20,     R21, R22, R23, R24,     \
-                  L30, L31, XXXXXXX,    XXXXXXX, R30, R31                \
+         XXXXXXX, L30, L31,             R30, R31, XXXXXXX                \
 )
 // clang-format on
 
@@ -60,12 +60,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
      * │ ' │ Q │ J │ K │ X │       │ B │ M │ W │ V │ Z │
      * └───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┘
-     *           ┌───┐                   ┌───┐
-     *           │SYM├───┐           ┌───┤NAV│
-     *           └───┤SFT│           │SPC├───┘
-     *               └───┘           └───┘
+     *               ┌───┐           ┌───┐
+     *               │SYM├───┐   ┌───┤NAV│
+     *               └───┤SFT│   │SPC├───┘
+     *                   └───┘   └───┘
      *
-     * Y, F and L are on NAV; ; is on SYM. Ctrl, Alt and GUI are combos.
+     * Y, F, L, ; and : are on NAV. Ctrl, Alt and GUI are combos.
      */
     [DEF] = LAYOUT_30(
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
@@ -100,7 +100,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [NAV] = LAYOUT_30(
                  EX_COMM, EX_DOT,  KC_SPC,               KC_PGUP, KC_UP,   KC_PGDN,
         C(KC_A), C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_DEL, KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
-        C(KC_Z), C(KC_Y), KC_L,    KC_F,    KC_Y,        KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
+        KC_SCLN, KC_COLN, KC_L,    KC_F,    KC_Y,        KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
                                    _______, _______,     _______, _______
     ),
 
