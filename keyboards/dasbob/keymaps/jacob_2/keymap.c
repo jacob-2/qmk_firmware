@@ -2,8 +2,8 @@
 
 #include "swapper.h"
 
-// Port of the jacob_2 ZMK Totem layout. The Totem's two outer bottom-row keys
-// (Bluetooth / Tab) have no equivalent on the 36-key Dasbob and are dropped.
+// Port of the jacob_2 ZMK Totem layout, cut down to 30 keys. The top-row pinky
+// keys, the top-row inner index keys and the outer thumb keys are unused.
 
 enum layers {
     DEF,
@@ -18,8 +18,7 @@ enum layers {
 
 enum keycodes {
     // &exit: return to DEF, then press the wrapped key.
-    EX_SCLN = SAFE_RANGE,
-    EX_COMM,
+    EX_COMM = SAFE_RANGE,
     EX_DOT,
     EX_SPC,
     EX_ENT,
@@ -37,82 +36,103 @@ enum keycodes {
 #define SK_CTL OSM(MOD_LCTL)
 #define SK_GUI OSM(MOD_LGUI)
 
+// The 30 keys in use; the other 6 are always KC_NO.
+// clang-format off
+#define LAYOUT_30(                                                  \
+         L01, L02, L03,                     R01, R02, R03,           \
+    L10, L11, L12, L13, L14,      R10, R11, R12, R13, R14,           \
+    L20, L21, L22, L23, L24,      R20, R21, R22, R23, R24,           \
+                   L30, L31,      R30, R31                           \
+) LAYOUT_split_3x5_3(                                               \
+    XXXXXXX, L01, L02, L03, XXXXXXX,    XXXXXXX, R01, R02, R03, XXXXXXX, \
+    L10,     L11, L12, L13, L14,        R10,     R11, R12, R13, R14,     \
+    L20,     L21, L22, L23, L24,        R20,     R21, R22, R23, R24,     \
+         XXXXXXX, L30, L31,             R30, R31, XXXXXXX                \
+)
+// clang-format on
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
-     * ┌───┬───┬───┬───┬───┐       ┌───┬───┬───┬───┬───┐
-     * │ ; │ , │ . │ P │ Y │       │ F │ G │ C │ R │ L │
-     * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
+     *     ┌───┬───┬───┐               ┌───┬───┬───┐
+     *     │ , │ . │ P │               │ G │ C │ R │
+     * ┌───┼───┼───┼───┼───┐       ┌───┼───┼───┼───┼───┐
      * │ A │ O │ E │ U │ I │       │ D │ H │ T │ N │ S │
      * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
      * │ ' │ Q │ J │ K │ X │       │ B │ M │ W │ V │ Z │
      * └───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┘
-     *           ┌───┐                   ┌───┐
-     *           │ALT├───┐           ┌───┤GUI│
-     *           └───┤SYM├───┐   ┌───┤CTL├───┘
+     *               ┌───┐           ┌───┐
+     *               │SYM├───┐   ┌───┤NAV│
      *               └───┤SFT│   │SPC├───┘
      *                   └───┘   └───┘
+     *
+     * Y, F, L, ; and : are on NAV. Ctrl, Alt and GUI are combos.
      */
-    [DEF] = LAYOUT_split_3x5_3(
-        KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
+    [DEF] = LAYOUT_30(
+                 KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
         KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
-                          SK_ALT,  SYM_DEF, SK_SFT,      EX_SPC,  SK_CTL,  SK_GUI
+                                   SYM_DEF, SK_SFT,      EX_SPC,  MO(NAV)
     ),
 
-    [GAM] = LAYOUT_split_3x5_3(
-        KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
+    // Games need a held (not sticky) Ctrl, so it takes the ' key.
+    [GAM] = LAYOUT_30(
+                 KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
+        KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
+        KC_LCTL, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+                                   KC_LSFT, KC_SPC,      EX_ENT,  SK_ALT
+    ),
+
+    [MAC] = LAYOUT_30(
+                 KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
         KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
-                          KC_LCTL, KC_LSFT, KC_SPC,      EX_ENT,  SK_ALT,  SK_GUI
+                                   _______, _______,     _______, _______
     ),
 
-    [MAC] = LAYOUT_split_3x5_3(
-        KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
-        KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
-        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
-                          _______, _______, _______,     _______, _______, _______
-    ),
-
-    [NUM] = LAYOUT_split_3x5_3(
-        EX_SCLN, KC_COMM, KC_DOT,  KC_SPC,  KC_NUM,      TO(FUN), KC_1,    KC_2,    KC_3,    KC_PLUS,
-        C(KC_A), KC_UNDS, OSL(SYM),KC_BSPC, XXXXXXX,     XXXXXXX, KC_4,    KC_5,    KC_6,    KC_0,
+    [NUM] = LAYOUT_30(
+                 KC_COMM, KC_DOT,  KC_SPC,               KC_1,    KC_2,    KC_3,
+        C(KC_A), KC_UNDS, OSL(SYM),KC_BSPC, KC_PLUS,     TO(FUN), KC_4,    KC_5,    KC_6,    KC_0,
         C(KC_Z), C(KC_X), C(KC_C), C(KC_V), XXXXXXX,     XXXXXXX, KC_7,    KC_8,    KC_9,    KC_ENT,
-                          _______, _______, _______,     _______, _______, _______
+                                   _______, _______,     _______, _______
     ),
 
-    [NAV] = LAYOUT_split_3x5_3(
-        EX_SCLN, EX_COMM, EX_DOT,  KC_SPC,  XXXXXXX,     TO(FUN), KC_PGUP, KC_UP,   KC_PGDN, KC_INS,
+    // Held from the right thumb, the left-hand letters are typed cross-hand.
+    [NAV] = LAYOUT_30(
+                 EX_COMM, EX_DOT,  KC_SPC,               KC_PGUP, KC_UP,   KC_PGDN,
         C(KC_A), C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_DEL, KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
-        C(KC_Z), C(KC_Y), C(KC_C), C(KC_V), C(KC_X),     KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
-                          _______, _______, _______,     _______, _______, _______
+        KC_SCLN, KC_COLN, KC_L,    KC_F,    KC_Y,        KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
+                                   _______, _______,     _______, _______
     ),
 
     // The Totem's Bluetooth / output keys are replaced by the Dasbob's audio toggles.
-    [FUN] = LAYOUT_split_3x5_3(
-        AU_TOGG, KC_VOLD, KC_MUTE, KC_VOLU, KC_BRIU,     XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F10,
-        CK_TOGG, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRID,     XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
-        XXXXXXX, KC_MRWD, XXXXXXX, KC_MFFD, XXXXXXX,     XXXXXXX, KC_F7,   KC_F8,   KC_F9,   KC_F12,
-                          _______, _______, _______,     _______, _______, _______
+    [FUN] = LAYOUT_30(
+                 KC_VOLD, KC_MUTE, KC_VOLU,              KC_F1,   KC_F2,   KC_F3,
+        CK_TOGG, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRIU,     KC_F10,  KC_F4,   KC_F5,   KC_F6,   KC_F11,
+        AU_TOGG, KC_MRWD, XXXXXXX, KC_MFFD, KC_BRID,     KC_INS,  KC_F7,   KC_F8,   KC_F9,   KC_F12,
+                                   _______, _______,     _______, _______
     ),
 
-    [CUS] = LAYOUT_split_3x5_3(
-        S(KC_F21), C(KC_F21), C(KC_F22), C(KC_F13), C(KC_F23),     A(KC_F21), KC_F21, KC_F22, KC_F13, KC_F23,
+    [CUS] = LAYOUT_30(
+                   C(KC_F21), C(KC_F22), C(KC_F13),                  KC_F21, KC_F22, KC_F13,
         S(KC_F14), C(KC_F14), C(KC_F15), C(KC_F16), C(KC_F20),     A(KC_F14), KC_F14, KC_F15, KC_F16, KC_F20,
         S(KC_F17), C(KC_F17), C(KC_F18), C(KC_F19), C(KC_F24),     A(KC_F17), KC_F17, KC_F18, KC_F19, KC_F24,
-                                  _______,   _______,   _______,     _______,   _______, _______
+                                         S(KC_F21), C(KC_F23),     A(KC_F21), KC_F23
     ),
 
-    [SYM] = LAYOUT_split_3x5_3(
-        KC_PERC, KC_QUES, KC_EXLM, XXXXXXX, XXXXXXX,     XXXXXXX, KC_PIPE, KC_SLSH, KC_BSLS, XXXXXXX,
+    [SYM] = LAYOUT_30(
+                 KC_QUES, KC_EXLM, KC_PERC,              KC_PIPE, KC_SLSH, KC_BSLS,
         KC_AMPR, KC_LBRC, KC_LCBR, KC_LPRN, KC_RCBR,     KC_EQL,  KC_ASTR, KC_RPRN, KC_PLUS, KC_RBRC,
-        KC_GRV,  KC_HASH, KC_TILD, KC_DLR,  XXXXXXX,     XXXXXXX, KC_AT,   KC_MINS, KC_UNDS, KC_CIRC,
-                          _______, _______, _______,     _______, _______, _______
+        KC_GRV,  KC_HASH, KC_TILD, KC_DLR,  KC_SCLN,     XXXXXXX, KC_AT,   KC_MINS, KC_UNDS, KC_CIRC,
+                                   _______, _______,     _______, _______
     ),
 };
 
 // Combos are positional (COMBO_ONLY_FROM_LAYER 0), so they fire on every layer
 // like the Totem's ZMK combos. Keys are named by their DEF-layer keycodes.
 const uint16_t PROGMEM cmb_o_e_u[]     = {KC_O, KC_E, KC_U, COMBO_END};
+const uint16_t PROGMEM cmb_o_e_i[]     = {KC_O, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM cmb_o_e_k[]     = {KC_O, KC_E, KC_K, COMBO_END};
+const uint16_t PROGMEM cmb_o_e_x[]     = {KC_O, KC_E, KC_X, COMBO_END};
 const uint16_t PROGMEM cmb_a_o_e_u[]   = {KC_A, KC_O, KC_E, KC_U, COMBO_END};
 const uint16_t PROGMEM cmb_q_j[]       = {KC_Q, KC_J, COMBO_END};
 const uint16_t PROGMEM cmb_j_k[]       = {KC_J, KC_K, COMBO_END};
@@ -124,9 +144,13 @@ const uint16_t PROGMEM cmb_t_n_s[]     = {KC_T, KC_N, KC_S, COMBO_END};
 const uint16_t PROGMEM cmb_h_t_n_s[]   = {KC_H, KC_T, KC_N, KC_S, COMBO_END};
 const uint16_t PROGMEM cmb_m_w_v[]     = {KC_M, KC_W, KC_V, COMBO_END};
 const uint16_t PROGMEM cmb_quot_q_j_k[] = {KC_QUOT, KC_Q, KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM cmb_sym_sft[]   = {SYM_DEF, SK_SFT, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(cmb_o_e_u, GO_DEF),
+    COMBO(cmb_o_e_i, SK_ALT),
+    COMBO(cmb_o_e_k, SK_CTL),
+    COMBO(cmb_o_e_x, SK_GUI),
     COMBO(cmb_a_o_e_u, EX_ESC),
     COMBO(cmb_q_j, EX_BSPC),
     COMBO(cmb_j_k, EX_ENT),
@@ -138,11 +162,11 @@ combo_t key_combos[] = {
     COMBO(cmb_h_t_n_s, TO(NUM)),
     COMBO(cmb_m_w_v, OSL(CUS)),
     COMBO(cmb_quot_q_j_k, TO(GAM)),
+    COMBO(cmb_sym_sft, KC_LGUI), // held, not sticky
 };
 
 static uint16_t exit_keycode(uint16_t keycode) {
     switch (keycode) {
-    case EX_SCLN: return KC_SCLN;
     case EX_COMM: return KC_COMM;
     case EX_DOT:  return KC_DOT;
     case EX_SPC:  return KC_SPC;
@@ -218,14 +242,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case SYM_DEF:
         if (record->event.pressed) {
             layer_move(DEF);
-            // Tap (not hold) of a one-shot layer, like the ZMK macro.
-            set_oneshot_layer(SYM, ONESHOT_START);
-            clear_oneshot_layer_state(ONESHOT_PRESSED);
         }
-        return false;
+        // The one-shot layer is set in post_process_record_user.
+        return true;
     case WIN_NXT:
         return false;
     }
 
     return true;
+}
+
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // Setting the one-shot layer here rather than in process_record_user
+    // keeps QMK from treating SYM_DEF's own press as the "other key" that
+    // ends it.
+    if (keycode == SYM_DEF && record->event.pressed) {
+        // Tap (not hold) of a one-shot layer, like the ZMK macro.
+        set_oneshot_layer(SYM, ONESHOT_START);
+        clear_oneshot_layer_state(ONESHOT_PRESSED);
+    }
 }
