@@ -4,7 +4,7 @@
     "maintainer": "grooovebob",
     "processor": "RP2040",
     "bootloader": "rp2040",
-    "url": "",
+    "url": "https://github.com/GroooveBob/DASBOB",
     "usb": {
         "device_version": "1.0.0",
         "pid": "0x0000",
