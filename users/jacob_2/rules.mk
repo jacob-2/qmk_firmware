@@ -1,8 +1,8 @@
 RGBLIGHT_ENABLE = no
-OS_DETECTION_ENABLE = yes
-TAP_DANCE_ENABLE = yes
+OS_DETECTION_ENABLE ?= yes
+TAP_DANCE_ENABLE ?= yes
 # REPEAT_KEY_ENABLE = yes
-COMBO_ENABLE = yes
+COMBO_ENABLE ?= yes
 
 SRC += oneshot.c
 SRC += swapper.c
