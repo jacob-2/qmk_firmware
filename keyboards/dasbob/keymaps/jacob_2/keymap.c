@@ -1,288 +1,231 @@
 #include QMK_KEYBOARD_H
 
-#include "oneshot.h"
 #include "swapper.h"
 
-enum dasbob_layers {
-  DEF,
-  SYM,
-  NUM,
-  NAV,
-  FUN
-};
+// Port of the jacob_2 ZMK Totem layout. The Totem's two outer bottom-row keys
+// (Bluetooth / Tab) have no equivalent on the 36-key Dasbob and are dropped.
 
-enum {
-    _TD_NAV
+enum layers {
+    DEF,
+    GAM,
+    MAC, // TODO: trilayer for mac layers (not reachable yet, same as the Totem)
+    NUM,
+    NAV,
+    FUN,
+    CUS,
+    SYM,
 };
-
-#define TD_NAV TD(_TD_NAV)
 
 enum keycodes {
-    // Custom oneshot mod implementation with no timers.
-    OS_SHFT = SAFE_RANGE,
-    OS_CTRL,
-    OS_ALT,
-    OS_CMD,
-    OS_SYS,
-    OS_SYM,
-    OS_CNCL,
+    // &exit: return to DEF, then press the wrapped key.
+    EX_SCLN = SAFE_RANGE,
+    EX_COMM,
+    EX_DOT,
+    EX_SPC,
+    EX_ENT,
+    EX_BSPC,
+    EX_ESC,
 
-    SW_WIN,
-    SW_LANG,
-    SW_TAB,  // TODO
-
-    CM_UNDO,
-    CM_CUT,
-    CM_COPY,
-    CM_PSTE,
-    CM_SELA,
-    CM_SAVE,
-    CM_FIND,
-    CM_NEW,
-    CM_T,
-    CM_W,
+    GO_DEF,  // &def: return to DEF and cancel sticky keys
+    ESC_NAV, // &esc_nav: go to NAV, cancel sticky keys, tap Esc
+    SYM_DEF, // &sym: return to DEF, then sticky SYM
+    WIN_NXT, // &win_nxt: hold Alt and tap Tab until another key is hit
 };
 
+#define SK_ALT OSM(MOD_LALT)
+#define SK_SFT OSM(MOD_LSFT)
+#define SK_CTL OSM(MOD_LCTL)
+#define SK_GUI OSM(MOD_LGUI)
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-     /*
-      * ┌───┬───┬───┬───┬───┐       ┌───┬───┬───┬───┬───┐
-      * │ Q │ W │ E │ R │ T │       │ Y │ U │ I │ O │ P │
-      * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
-      * │ A │ S │ D │ F │ G │       │ H │ J │ K │ L │ ; │
-      * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
-      * │ Z │ X │ C │ V │ B │       │ N │ M │ , │ . │ / │
-      * └───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┘
-      *           ┌───┐                   ┌───┐
-      *           │DEL├───┐           ┌───┤ESC│
-      *           └───┤SPC├───┐   ┌───┤BSP├───┘
-      *               └───│LOW│   │RSE├───┘
-      *                   └───┘   └───┘
-      */
-
-
+    /*
+     * ┌───┬───┬───┬───┬───┐       ┌───┬───┬───┬───┬───┐
+     * │ ; │ , │ . │ P │ Y │       │ F │ G │ C │ R │ L │
+     * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
+     * │ A │ O │ E │ U │ I │       │ D │ H │ T │ N │ S │
+     * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
+     * │ ' │ Q │ J │ K │ X │       │ B │ M │ W │ V │ Z │
+     * └───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┘
+     *           ┌───┐                   ┌───┐
+     *           │ALT├───┐           ┌───┤GUI│
+     *           └───┤SYM├───┐   ┌───┤CTL├───┘
+     *               └───┤SFT│   │SPC├───┘
+     *                   └───┘   └───┘
+     */
     [DEF] = LAYOUT_split_3x5_3(
         KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
-        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_B,    KC_W,    KC_V,    KC_Z,
-                          OS_CTRL, OS_SHFT, OS_SYM,      TO(NAV), KC_SPC,  QK_AREP
+        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+                          SK_ALT,  SYM_DEF, SK_SFT,      EX_SPC,  SK_CTL,  SK_GUI
     ),
 
-    [SYM] = LAYOUT_split_3x5_3(
-        KC_PERC, KC_TILD, KC_DLR,  KC_QUES, KC_NO,       KC_NO,   KC_SLSH, KC_MINS, KC_UNDS, KC_EXLM,
-        KC_AMPR, KC_LBRC, KC_LCBR, KC_LPRN, KC_RCBR,     KC_EQL,  KC_ASTR, KC_RPRN, KC_PLUS, KC_RBRC,
-        KC_GRV,  KC_HASH, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, KC_AT,   KC_CIRC, KC_BSLS, KC_PIPE,
-                          _______, _______, _______,     TO(DEF), _______, _______
+    [GAM] = LAYOUT_split_3x5_3(
+        KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
+        KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
+        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+                          KC_LCTL, KC_LSFT, KC_SPC,      EX_ENT,  SK_ALT,  SK_GUI
     ),
 
-    [NUM] = LAYOUT_split_3x5_3(
-        KC_PSCR, XXXXXXX, KC_APP,  KC_CALC, KC_LNUM,     KC_SLSH, KC_1,    KC_2,    KC_3,    KC_MINS,
-        CM_SELA, TO(FUN), XXXXXXX, XXXXXXX, CM_FIND,     KC_ASTR, KC_4,    KC_5,    KC_6,    KC_PLUS,
-        CM_UNDO, CM_CUT,  CM_COPY, CM_PSTE, XXXXXXX,     KC_DOT,  KC_7,    KC_8,    KC_9,    KC_ENT,
-                          _______, _______, _______,     _______, KC_0,    TO(FUN)
-    ),
-
-    [NAV] = LAYOUT_split_3x5_3(
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, KC_PGUP, KC_UP,   KC_PGDN, XXXXXXX,
-        CM_SELA, TO(NUM), SW_TAB,  SW_WIN,  XXXXXXX,     KC_DEL,  KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
-        CM_UNDO, CM_CUT,  CM_COPY, CM_PSTE, XXXXXXX,     XXXXXXX, KC_HOME, KC_END,  XXXXXXX, KC_INS,
-                          _______, _______, TO(DEF),     _______, _______, _______
-    ),
-
-    [FUN] = LAYOUT_split_3x5_3( // TODO AU_VOL
-        AU_TOGG, KC_VOLU, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F10,
-        CK_TOGG, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX,     XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
-        XXXXXXX, KC_VOLD, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, KC_F7,   KC_F8,   KC_F9,   KC_F12,
+    [MAC] = LAYOUT_split_3x5_3(
+        KC_SCLN, KC_COMM, KC_DOT,  KC_P,    KC_Y,        KC_F,    KC_G,    KC_C,    KC_R,    KC_L,
+        KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
+        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
                           _______, _______, _______,     _______, _______, _______
     ),
 
+    [NUM] = LAYOUT_split_3x5_3(
+        EX_SCLN, KC_COMM, KC_DOT,  KC_SPC,  KC_NUM,      TO(FUN), KC_1,    KC_2,    KC_3,    KC_PLUS,
+        C(KC_A), KC_UNDS, OSL(SYM),KC_BSPC, XXXXXXX,     XXXXXXX, KC_4,    KC_5,    KC_6,    KC_0,
+        C(KC_Z), C(KC_X), C(KC_C), C(KC_V), XXXXXXX,     XXXXXXX, KC_7,    KC_8,    KC_9,    KC_ENT,
+                          _______, _______, _______,     _______, _______, _______
+    ),
+
+    [NAV] = LAYOUT_split_3x5_3(
+        EX_SCLN, EX_COMM, EX_DOT,  KC_SPC,  XXXXXXX,     TO(FUN), KC_PGUP, KC_UP,   KC_PGDN, KC_INS,
+        C(KC_A), C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_DEL, KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
+        C(KC_Z), C(KC_Y), C(KC_C), C(KC_V), C(KC_X),     KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
+                          _______, _______, _______,     _______, _______, _______
+    ),
+
+    // The Totem's Bluetooth / output keys are replaced by the Dasbob's audio toggles.
+    [FUN] = LAYOUT_split_3x5_3(
+        AU_TOGG, KC_VOLD, KC_MUTE, KC_VOLU, KC_BRIU,     XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F10,
+        CK_TOGG, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRID,     XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
+        XXXXXXX, KC_MRWD, XXXXXXX, KC_MFFD, XXXXXXX,     XXXXXXX, KC_F7,   KC_F8,   KC_F9,   KC_F12,
+                          _______, _______, _______,     _______, _______, _______
+    ),
+
+    [CUS] = LAYOUT_split_3x5_3(
+        S(KC_F21), C(KC_F21), C(KC_F22), C(KC_F13), C(KC_F23),     A(KC_F21), KC_F21, KC_F22, KC_F13, KC_F23,
+        S(KC_F14), C(KC_F14), C(KC_F15), C(KC_F16), C(KC_F20),     A(KC_F14), KC_F14, KC_F15, KC_F16, KC_F20,
+        S(KC_F17), C(KC_F17), C(KC_F18), C(KC_F19), C(KC_F24),     A(KC_F17), KC_F17, KC_F18, KC_F19, KC_F24,
+                                  _______,   _______,   _______,     _______,   _______, _______
+    ),
+
+    [SYM] = LAYOUT_split_3x5_3(
+        KC_PERC, KC_QUES, KC_EXLM, XXXXXXX, XXXXXXX,     XXXXXXX, KC_PIPE, KC_SLSH, KC_BSLS, XXXXXXX,
+        KC_AMPR, KC_LBRC, KC_LCBR, KC_LPRN, KC_RCBR,     KC_EQL,  KC_ASTR, KC_RPRN, KC_PLUS, KC_RBRC,
+        KC_GRV,  KC_HASH, KC_TILD, KC_DLR,  XXXXXXX,     XXXXXXX, KC_AT,   KC_MINS, KC_UNDS, KC_CIRC,
+                          _______, _______, _______,     _______, _______, _______
+    ),
 };
 
-const uint16_t PROGMEM cmb_j_k[] = {KC_J, KC_K, COMBO_END};
-const uint16_t PROGMEM cmb_q_j[] = {KC_Q, KC_J, COMBO_END};
-const uint16_t PROGMEM cmb_k_x[] = {KC_K, KC_X, COMBO_END};
-const uint16_t PROGMEM cmb_g_c[] = {KC_G, KC_C, COMBO_END};
-const uint16_t PROGMEM cmb_comma_dot[] = {KC_COMMA, KC_DOT, COMBO_END};
-const uint16_t PROGMEM cmb_m_w[] = {KC_M, KC_W, COMBO_END};
-const uint16_t PROGMEM cmb_w_v[] = {KC_W, KC_V, COMBO_END};
+// Combos are positional (COMBO_ONLY_FROM_LAYER 0), so they fire on every layer
+// like the Totem's ZMK combos. Keys are named by their DEF-layer keycodes.
+const uint16_t PROGMEM cmb_o_e_u[]     = {KC_O, KC_E, KC_U, COMBO_END};
+const uint16_t PROGMEM cmb_a_o_e_u[]   = {KC_A, KC_O, KC_E, KC_U, COMBO_END};
+const uint16_t PROGMEM cmb_q_j[]       = {KC_Q, KC_J, COMBO_END};
+const uint16_t PROGMEM cmb_j_k[]       = {KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM cmb_q_j_k[]     = {KC_Q, KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM cmb_m_w[]       = {KC_M, KC_W, COMBO_END};
+const uint16_t PROGMEM cmb_w_v[]       = {KC_W, KC_V, COMBO_END};
+const uint16_t PROGMEM cmb_h_t_n[]     = {KC_H, KC_T, KC_N, COMBO_END};
+const uint16_t PROGMEM cmb_t_n_s[]     = {KC_T, KC_N, KC_S, COMBO_END};
+const uint16_t PROGMEM cmb_h_t_n_s[]   = {KC_H, KC_T, KC_N, KC_S, COMBO_END};
+const uint16_t PROGMEM cmb_m_w_v[]     = {KC_M, KC_W, KC_V, COMBO_END};
+const uint16_t PROGMEM cmb_quot_q_j_k[] = {KC_QUOT, KC_Q, KC_J, KC_K, COMBO_END};
+
 combo_t key_combos[] = {
-    COMBO(cmb_j_k, KC_ENT),
-    COMBO(cmb_q_j, KC_BSPC),
-    COMBO(cmb_k_x, OS_CMD),
-    COMBO(cmb_g_c, KC_MINS),
-    COMBO(cmb_comma_dot, KC_ESC),
+    COMBO(cmb_o_e_u, GO_DEF),
+    COMBO(cmb_a_o_e_u, EX_ESC),
+    COMBO(cmb_q_j, EX_BSPC),
+    COMBO(cmb_j_k, EX_ENT),
+    COMBO(cmb_q_j_k, CW_TOGG),
     COMBO(cmb_m_w, KC_TAB),
-    COMBO(cmb_w_v, LALT(KC_TAB)),
+    COMBO(cmb_w_v, A(KC_TAB)),
+    COMBO(cmb_h_t_n, TO(NAV)),
+    COMBO(cmb_t_n_s, ESC_NAV),
+    COMBO(cmb_h_t_n_s, TO(NUM)),
+    COMBO(cmb_m_w_v, OSL(CUS)),
+    COMBO(cmb_quot_q_j_k, TO(GAM)),
 };
 
-bool is_oneshot_cancel_key(uint16_t keycode) {
+static uint16_t exit_keycode(uint16_t keycode) {
     switch (keycode) {
-    case OS_CNCL:
+    case EX_SCLN: return KC_SCLN;
+    case EX_COMM: return KC_COMM;
+    case EX_DOT:  return KC_DOT;
+    case EX_SPC:  return KC_SPC;
+    case EX_ENT:  return KC_ENT;
+    case EX_BSPC: return KC_BSPC;
+    case EX_ESC:  return KC_ESC;
+    default:      return KC_NO;
+    }
+}
+
+// Equivalent of the Totem's K_CANCEL tap, which releases pending sticky keys.
+static void cancel_sticky(void) {
+    clear_oneshot_mods();
+    reset_oneshot_layer();
+    caps_word_off();
+}
+
+// Match ZMK's caps word: continue on letters, digits, underscore, backspace
+// and delete; anything else (including minus) ends it.
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+    case KC_A ... KC_Z:
+        add_weak_mods(MOD_BIT(KC_LSFT));
+        return true;
+    case KC_1 ... KC_0:
+    case KC_UNDS:
+    case KC_BSPC:
+    case EX_BSPC:
+    case KC_DEL:
         return true;
     default:
         return false;
     }
 }
 
-bool is_oneshot_ignored_key(uint16_t keycode) {
-    switch (keycode) {
-    case TD_NAV:
-    case TO(DEF):
-    case TO(SYM):
-    case TO(NAV):
-    case TO(NUM):
-    case TO(FUN):
-    case KC_LSFT:
-    case OS_SHFT:
-    case OS_CTRL:
-    case OS_ALT:
-    case OS_CMD:
-    case OS_SYS:
-    case OS_SYM:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool sw_win_active = false;
-bool sw_lang_active = false;
-bool sw_tab_active = false;
-
-oneshot_state os_shft_state = os_up_unqueued;
-oneshot_state os_ctrl_state = os_up_unqueued;
-oneshot_state os_alt_state = os_up_unqueued;
-oneshot_state os_cmd_state = os_up_unqueued;
-oneshot_state os_sys_state = os_up_unqueued;
-oneshot_state os_sym_state = os_up_unqueued;
-
-int with_ctrl(int keycode) {
-    return C(keycode);
-}
-int with_cmd(int keycode) {
-    return G(keycode);
-}
-int (*sys_mod)(int) = with_ctrl;
-int sys_mod_kc = KC_LCTL;
-bool process_detected_host_os_user(os_variant_t detected_os) {
-    switch (detected_os) {
-        case OS_MACOS:
-        case OS_IOS:
-            sys_mod = with_cmd;
-            sys_mod_kc = KC_LGUI;
-            break;
-        default:
-            break;
-    }
-    return true;
-}
-
+bool win_nxt_active = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    update_swapper(
-        &sw_win_active, KC_LGUI, KC_TAB, SW_WIN,
-        keycode, record
-    );
-    update_swapper(
-        &sw_lang_active, KC_LCTL, KC_SPC, SW_LANG,
-        keycode, record
-    );
-    update_swapper(
-        &sw_tab_active, KC_LCTL, KC_TAB, SW_TAB,
-        keycode, record
-    );
-
-    update_oneshot(
-        &os_shft_state, KC_LSFT, OS_SHFT,
-        keycode, record
-    );
-    update_oneshot(
-        &os_ctrl_state, KC_LCTL, OS_CTRL,
-        keycode, record
-    );
-    update_oneshot(
-        &os_alt_state, KC_LALT, OS_ALT,
-        keycode, record
-    );
-    update_oneshot(
-        &os_cmd_state, KC_LCMD, OS_CMD,
-        keycode, record
-    );
-    update_oneshot(
-        &os_cmd_state, sys_mod_kc, OS_SYS,
-        keycode, record
-    );
-    update_oneshot_layer(
-        &os_sym_state, SYM, OS_SYM,
-        keycode, record
-    );
-
-    void (*reg_unreg)(uint16_t) = register_code16;
-    if (!record->event.pressed) {
-        reg_unreg = unregister_code16;
+    // Shift+Tab steps back through the switcher without releasing Alt.
+    if (keycode != S(KC_TAB)) {
+        update_swapper(
+            &win_nxt_active, KC_LALT, KC_TAB, WIN_NXT,
+            keycode, record
+        );
     }
+
+    uint16_t exit_kc = exit_keycode(keycode);
+    if (exit_kc != KC_NO) {
+        if (record->event.pressed) {
+            layer_move(DEF);
+            reset_oneshot_layer();
+            register_code16(exit_kc);
+        } else {
+            unregister_code16(exit_kc);
+        }
+        return false;
+    }
+
     switch (keycode) {
-    case CM_UNDO:
-        reg_unreg(sys_mod(KC_Z));
-        break;
-    case CM_CUT:
-        reg_unreg(sys_mod(KC_X));
-        break;
-    case CM_COPY:
-        reg_unreg(sys_mod(KC_C));
-        break;
-    case CM_PSTE:
-        reg_unreg(sys_mod(KC_V));
-        break;
-    case CM_SELA:
-        reg_unreg(sys_mod(KC_A));
-        break;
-    case CM_SAVE:
-        reg_unreg(sys_mod(KC_S));
-        break;
-    case CM_FIND:
-        reg_unreg(sys_mod(KC_F));
-        break;
-    case CM_NEW:
-        reg_unreg(sys_mod(KC_N));
-        break;
-    case CM_T:
-        reg_unreg(sys_mod(KC_T));
-        break;
-    case CM_W:
-        reg_unreg(sys_mod(KC_W));
-        break;
+    case GO_DEF:
+        if (record->event.pressed) {
+            layer_move(DEF);
+            cancel_sticky();
+        }
+        return false;
+    case ESC_NAV:
+        if (record->event.pressed) {
+            layer_move(NAV);
+            cancel_sticky();
+            tap_code(KC_ESC);
+        }
+        return false;
+    case SYM_DEF:
+        if (record->event.pressed) {
+            layer_move(DEF);
+            // Tap (not hold) of a one-shot layer, like the ZMK macro.
+            set_oneshot_layer(SYM, ONESHOT_START);
+            clear_oneshot_layer_state(ONESHOT_PRESSED);
+        }
+        return false;
+    case WIN_NXT:
+        return false;
     }
 
     return true;
 }
-
-void td_nav_fn(tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        layer_on(NAV);
-        return;
-    }
-    if (state->count == 3) {
-        sw_win_active = false;
-        sw_lang_active = false;
-        os_shft_state = os_up_unqueued;
-        os_ctrl_state = os_up_unqueued;
-        os_alt_state = os_up_unqueued;
-        os_cmd_state = os_up_unqueued;
-        os_sys_state = os_up_unqueued;
-        os_sym_state = os_up_unqueued;
-        reset_tap_dance(state);
-        clear_keyboard();
-    }
-    layer_clear();
-}
-
-tap_dance_action_t tap_dance_actions[] = {
-    [_TD_NAV] = ACTION_TAP_DANCE_FN(td_nav_fn),
-};
-
-
-// layer_state_t layer_state_set_user(layer_state_t state) {
-//     return update_tri_layer_state(state, SYM, NAV, NUM);
-// }
-
-
