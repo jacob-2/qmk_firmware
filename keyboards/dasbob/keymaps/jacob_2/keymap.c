@@ -132,6 +132,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 const uint16_t PROGMEM cmb_o_e_u[]     = {KC_O, KC_E, KC_U, COMBO_END};
 const uint16_t PROGMEM cmb_o_e_i[]     = {KC_O, KC_E, KC_I, COMBO_END};
 const uint16_t PROGMEM cmb_o_e_k[]     = {KC_O, KC_E, KC_K, COMBO_END};
+const uint16_t PROGMEM cmb_o_e_x[]     = {KC_O, KC_E, KC_X, COMBO_END};
 const uint16_t PROGMEM cmb_a_o_e_u[]   = {KC_A, KC_O, KC_E, KC_U, COMBO_END};
 const uint16_t PROGMEM cmb_q_j[]       = {KC_Q, KC_J, COMBO_END};
 const uint16_t PROGMEM cmb_j_k[]       = {KC_J, KC_K, COMBO_END};
@@ -149,6 +150,7 @@ combo_t key_combos[] = {
     COMBO(cmb_o_e_u, GO_DEF),
     COMBO(cmb_o_e_i, SK_ALT),
     COMBO(cmb_o_e_k, SK_CTL),
+    COMBO(cmb_o_e_x, SK_GUI),
     COMBO(cmb_a_o_e_u, EX_ESC),
     COMBO(cmb_q_j, EX_BSPC),
     COMBO(cmb_j_k, EX_ENT),
