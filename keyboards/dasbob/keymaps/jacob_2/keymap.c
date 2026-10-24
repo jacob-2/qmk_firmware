@@ -242,14 +242,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case SYM_DEF:
         if (record->event.pressed) {
             layer_move(DEF);
-            // Tap (not hold) of a one-shot layer, like the ZMK macro.
-            set_oneshot_layer(SYM, ONESHOT_START);
-            clear_oneshot_layer_state(ONESHOT_PRESSED);
         }
-        return false;
+        // The one-shot layer is set in post_process_record_user.
+        return true;
     case WIN_NXT:
         return false;
     }
 
     return true;
+}
+
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // Setting the one-shot layer here rather than in process_record_user
+    // keeps QMK from treating SYM_DEF's own press as the "other key" that
+    // ends it.
+    if (keycode == SYM_DEF && record->event.pressed) {
+        // Tap (not hold) of a one-shot layer, like the ZMK macro.
+        set_oneshot_layer(SYM, ONESHOT_START);
+        clear_oneshot_layer_state(ONESHOT_PRESSED);
+    }
 }
