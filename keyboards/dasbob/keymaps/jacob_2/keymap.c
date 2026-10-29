@@ -29,6 +29,7 @@ enum keycodes {
     ESC_NAV, // &esc_nav: go to NAV, cancel sticky keys, tap Esc
     SYM_DEF, // &sym: return to DEF, then sticky SYM
     WIN_NXT, // &win_nxt: hold Alt and tap Tab until another key is hit
+    NAV_DEF, // held: NAV only; released: back to DEF
 };
 
 #define SK_ALT OSM(MOD_LALT)
@@ -71,7 +72,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
         KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
-                                   SYM_DEF, SK_SFT,      EX_SPC,  MO(NAV)
+                                   SYM_DEF, SK_SFT,      EX_SPC,  NAV_DEF
     ),
 
     // Games need a held (not sticky) Ctrl, so it takes the ' key.
@@ -196,6 +197,7 @@ bool caps_word_press_user(uint16_t keycode) {
     case KC_BSPC:
     case EX_BSPC:
     case KC_DEL:
+    case NAV_DEF:
         return true;
     default:
         return false;
@@ -245,6 +247,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         // The one-shot layer is set in post_process_record_user.
         return true;
+    case NAV_DEF:
+        // Drops any toggled or one-shot layer, so a tap returns to DEF.
+        layer_move(record->event.pressed ? NAV : DEF);
+        reset_oneshot_layer();
+        return false;
     case WIN_NXT:
         return false;
     }
