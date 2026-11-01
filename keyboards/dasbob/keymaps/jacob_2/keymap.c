@@ -29,6 +29,7 @@ enum keycodes {
     ESC_NAV, // &esc_nav: go to NAV, cancel sticky keys, tap Esc
     SYM_DEF, // &sym: return to DEF, then sticky SYM
     WIN_NXT, // &win_nxt: hold Alt and tap Tab until another key is hit
+    NAV_DEF, // held: NAV only; released: back to DEF
 };
 
 #define SK_ALT OSM(MOD_LALT)
@@ -66,12 +67,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                   └───┘   └───┘
      *
      * Y, F, L, ; and : are on NAV. Ctrl, Alt and GUI are combos.
+     * Holding SYM and NAV together gives NUM.
      */
     [DEF] = LAYOUT_30(
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
         KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
-                                   SYM_DEF, SK_SFT,      EX_SPC,  MO(NAV)
+                                   SYM_DEF, SK_SFT,      EX_SPC,  NAV_DEF
     ),
 
     // Games need a held (not sticky) Ctrl, so it takes the ' key.
@@ -99,8 +101,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Held from the right thumb, the left-hand letters are typed cross-hand.
     [NAV] = LAYOUT_30(
                  EX_COMM, EX_DOT,  KC_SPC,               KC_PGUP, KC_UP,   KC_PGDN,
-        C(KC_A), C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_DEL, KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
-        KC_SCLN, KC_COLN, KC_L,    KC_F,    KC_Y,        KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
+        KC_LGUI, C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_DEL, KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
+        KC_COLN, KC_L,    KC_F,    KC_SCLN, KC_Y,        KC_APP,  KC_HOME, KC_END,  KC_V,    KC_ENT,
                                    _______, _______,     _______, _______
     ),
 
@@ -196,6 +198,7 @@ bool caps_word_press_user(uint16_t keycode) {
     case KC_BSPC:
     case EX_BSPC:
     case KC_DEL:
+    case NAV_DEF:
         return true;
     default:
         return false;
@@ -203,6 +206,10 @@ bool caps_word_press_user(uint16_t keycode) {
 }
 
 bool win_nxt_active = false;
+
+// Holding both thumb layer keys gives NUM.
+static bool sym_held = false;
+static bool nav_held = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Shift+Tab steps back through the switcher without releasing Alt.
@@ -240,11 +247,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return false;
     case SYM_DEF:
+        sym_held = record->event.pressed;
+        if (nav_held) {
+            // NUM while both are held, back to NAV when SYM is let go.
+            layer_move(sym_held ? NUM : NAV);
+            return false;
+        }
         if (record->event.pressed) {
             layer_move(DEF);
         }
         // The one-shot layer is set in post_process_record_user.
         return true;
+    case NAV_DEF:
+        nav_held = record->event.pressed;
+        // Drops any toggled or one-shot layer, so a tap returns to DEF.
+        layer_move(nav_held ? (sym_held ? NUM : NAV) : DEF);
+        reset_oneshot_layer();
+        return false;
     case WIN_NXT:
         return false;
     }
