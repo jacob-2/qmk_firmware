@@ -206,6 +206,14 @@ bool win_nxt_active = false;
 // Holding both thumb layer keys gives NUM.
 static bool sym_held = false;
 static bool nav_held = false;
+// Set when the NAV thumb is pressed while NAV is locked on (by a combo):
+// the thumb then gives DEF while held and returns to NAV when let go.
+static bool nav_was_locked = false;
+
+// The layer the NAV thumb gives while it is held on its own.
+static uint8_t nav_thumb_layer(void) {
+    return nav_was_locked ? DEF : NAV;
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Shift+Tab steps back through the switcher without releasing Alt.
@@ -245,8 +253,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case SYM_DEF:
         sym_held = record->event.pressed;
         if (nav_held) {
-            // NUM while both are held, back to NAV when SYM is let go.
-            layer_move(sym_held ? NUM : NAV);
+            // NUM while both are held, back to the NAV thumb's layer
+            // when SYM is let go.
+            layer_move(sym_held ? NUM : nav_thumb_layer());
             return false;
         }
         if (record->event.pressed) {
@@ -256,8 +265,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return true;
     case NAV_DEF:
         nav_held = record->event.pressed;
-        // Drops any toggled or one-shot layer, so a tap returns to DEF.
-        layer_move(nav_held ? (sym_held ? NUM : NAV) : DEF);
+        if (nav_held) {
+            nav_was_locked = layer_state_is(NAV);
+            layer_move(sym_held ? NUM : nav_thumb_layer());
+        } else {
+            // Back to NAV if it was locked on. Otherwise this drops any
+            // toggled layer, so a tap returns to DEF.
+            layer_move(nav_was_locked ? NAV : DEF);
+        }
         reset_oneshot_layer();
         return false;
     case WIN_NXT:
