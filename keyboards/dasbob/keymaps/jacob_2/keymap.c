@@ -18,9 +18,7 @@ enum layers {
 
 enum keycodes {
     // &exit: return to DEF, then press the wrapped key.
-    EX_COMM = SAFE_RANGE,
-    EX_DOT,
-    EX_SPC,
+    EX_SPC = SAFE_RANGE,
     EX_ENT,
     EX_BSPC,
     EX_ESC,
@@ -59,20 +57,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ┌───┼───┼───┼───┼───┐       ┌───┼───┼───┼───┼───┐
      * │ A │ O │ E │ U │ I │       │ D │ H │ T │ N │ S │
      * ├───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┤
-     * │ ' │ Q │ J │ K │ X │       │ B │ M │ W │ V │ Z │
+     * │ ' │ Q │ J │ K │ Y │       │ B │ M │ W │ V │ Z │
      * └───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┘
      *               ┌───┐           ┌───┐
      *               │SYM├───┐   ┌───┤NAV│
      *               └───┤SFT│   │SPC├───┘
      *                   └───┘   └───┘
      *
-     * Y, F, L, ; and : are on NAV. Ctrl, Alt and GUI are combos.
+     * X, F, L, ; and : are on NAV. Ctrl, Alt and GUI are combos.
      * Holding SYM and NAV together gives NUM.
      */
     [DEF] = LAYOUT_30(
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
-        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_Y,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
                                    SYM_DEF, SK_SFT,      EX_SPC,  NAV_DEF
     ),
 
@@ -80,14 +78,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [GAM] = LAYOUT_30(
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
-        KC_LCTL, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+        KC_LCTL, KC_Q,    KC_J,    KC_K,    KC_Y,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
                                    KC_LSFT, KC_SPC,      EX_ENT,  SK_ALT
     ),
 
     [MAC] = LAYOUT_30(
                  KC_COMM, KC_DOT,  KC_P,                 KC_G,    KC_C,    KC_R,
         KC_A,    KC_O,    KC_E,    KC_U,    KC_I,        KC_D,    KC_H,    KC_T,    KC_N,    KC_S,
-        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_X,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
+        KC_QUOT, KC_Q,    KC_J,    KC_K,    KC_Y,        KC_B,    KC_M,    KC_W,    KC_V,    KC_Z,
                                    _______, _______,     _______, _______
     ),
 
@@ -100,8 +98,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     // Held from the right thumb, the left-hand letters are typed cross-hand.
     [NAV] = LAYOUT_30(
-                 EX_COMM, EX_DOT,  KC_SPC,               KC_PGUP, KC_UP,   KC_PGDN,
-        KC_COLN, KC_L,    KC_F,    KC_SCLN, KC_Y,        KC_DEL,  KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
+                 KC_LALT, KC_LCTL, KC_C,                 KC_PGUP, KC_UP,   KC_PGDN,
+        KC_COLN, KC_L,    KC_F,    KC_SCLN, KC_X,        KC_DEL,  KC_LEFT, KC_DOWN, KC_RGHT, KC_BSPC,
         KC_LGUI, C(S(KC_TAB)), C(KC_TAB), WIN_NXT, S(KC_TAB), KC_APP, KC_HOME, KC_END, KC_V,    KC_ENT,
                                    _______, _______,     _______, _______
     ),
@@ -134,7 +132,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 const uint16_t PROGMEM cmb_o_e_u[]     = {KC_O, KC_E, KC_U, COMBO_END};
 const uint16_t PROGMEM cmb_o_e_i[]     = {KC_O, KC_E, KC_I, COMBO_END};
 const uint16_t PROGMEM cmb_o_e_k[]     = {KC_O, KC_E, KC_K, COMBO_END};
-const uint16_t PROGMEM cmb_o_e_x[]     = {KC_O, KC_E, KC_X, COMBO_END};
+const uint16_t PROGMEM cmb_o_e_y[]     = {KC_O, KC_E, KC_Y, COMBO_END};
 const uint16_t PROGMEM cmb_a_o_e_u[]   = {KC_A, KC_O, KC_E, KC_U, COMBO_END};
 const uint16_t PROGMEM cmb_q_j[]       = {KC_Q, KC_J, COMBO_END};
 const uint16_t PROGMEM cmb_j_k[]       = {KC_J, KC_K, COMBO_END};
@@ -152,7 +150,7 @@ combo_t key_combos[] = {
     COMBO(cmb_o_e_u, GO_DEF),
     COMBO(cmb_o_e_i, SK_ALT),
     COMBO(cmb_o_e_k, SK_CTL),
-    COMBO(cmb_o_e_x, SK_GUI),
+    COMBO(cmb_o_e_y, SK_GUI),
     COMBO(cmb_a_o_e_u, EX_ESC),
     COMBO(cmb_q_j, EX_BSPC),
     COMBO(cmb_j_k, EX_ENT),
@@ -169,8 +167,6 @@ combo_t key_combos[] = {
 
 static uint16_t exit_keycode(uint16_t keycode) {
     switch (keycode) {
-    case EX_COMM: return KC_COMM;
-    case EX_DOT:  return KC_DOT;
     case EX_SPC:  return KC_SPC;
     case EX_ENT:  return KC_ENT;
     case EX_BSPC: return KC_BSPC;
