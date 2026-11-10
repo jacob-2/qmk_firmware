@@ -28,6 +28,7 @@ enum keycodes {
     SYM_DEF, // &sym: return to DEF, then sticky SYM
     WIN_NXT, // &win_nxt: hold Alt and tap Tab until another key is hit
     NAV_DEF, // held: NAV only; released: back to DEF
+    ARROW,   // types ->
 };
 
 #define SK_ALT OSM(MOD_LALT)
@@ -122,7 +123,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [SYM] = LAYOUT_30(
                  KC_QUES, KC_EXLM, KC_PERC,              KC_PIPE, KC_SLSH, KC_BSLS,
         KC_AMPR, KC_LBRC, KC_LCBR, KC_LPRN, KC_RCBR,     KC_EQL,  KC_ASTR, KC_RPRN, KC_PLUS, KC_RBRC,
-        KC_GRV,  KC_HASH, KC_TILD, KC_DLR,  KC_SCLN,     XXXXXXX, KC_AT,   KC_MINS, KC_UNDS, KC_CIRC,
+        KC_GRV,  KC_HASH, KC_TILD, KC_DLR,  ARROW,       XXXXXXX, KC_AT,   KC_MINS, KC_UNDS, KC_CIRC,
                                    _______, _______,     _______, _______
     ),
 };
@@ -274,6 +275,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             layer_move(nav_was_locked ? NAV : DEF);
         }
         reset_oneshot_layer();
+        return false;
+    case ARROW:
+        if (record->event.pressed) {
+            SEND_STRING("->");
+        }
         return false;
     case WIN_NXT:
         return false;
